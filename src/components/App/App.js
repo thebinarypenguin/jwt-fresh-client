@@ -2,6 +2,7 @@ import React from 'react';
 import LoginForm from '../LoginForm/LoginForm';
 import LogoutForm from '../LogoutForm/LogoutForm';
 import refresher from '../../refresher';
+import killer from '../../killer';
 
 import './App.css';
 
@@ -20,6 +21,13 @@ class App extends React.Component {
 
   componentDidMount() {
     this.refresher = refresher.createRefresher(window.localStorage, 'token');
+    this.killer    = killer.createKiller(window.localStorage, 'token');
+
+    document.addEventListener('mousemove', this.killer.reset);
+  }
+
+  componentWillUnmount() {
+    document.removeEventListener('mousemove', this.killer.reset);
   }
 
   handleLogin(token) {
