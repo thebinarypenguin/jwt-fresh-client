@@ -5,19 +5,20 @@ const createCountdown = function (fn, ms) {
   let timeout;
 
   const action = () => {
+    console.log('Killer: kill');
     fn();
     active = false;
   };
 
   const start = function () {
-    console.log('start');
+    console.log('Killer: start');
 
     active = true;
     timeout = setTimeout(action, ms);
   };
 
   const stop = function () {
-    console.log('stop');
+    console.log('Killer: stop');
 
     active = false;
     clearTimeout(timeout);
@@ -26,7 +27,7 @@ const createCountdown = function (fn, ms) {
   const reset = function () {
 
     if (active) {
-      console.log('reset');
+      console.log('Killer: reset');
 
       clearTimeout(timeout);
       timeout = setTimeout(action, ms);
