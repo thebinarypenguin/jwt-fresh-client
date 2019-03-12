@@ -7,3 +7,10 @@ h1 {
   margin-top: 1rem;
   margin-bottom: 3rem;
 }
+
+#instructions {
+  max-width: 50rem;
+  margin: auto;
+  text-align: left;
+  margin-bottom:3rem;
+}

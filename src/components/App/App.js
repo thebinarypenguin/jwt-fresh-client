@@ -109,6 +109,11 @@ class App extends React.Component {
       <div id="app" className="container-fluid">
         <h1>JWT Fresh</h1>
 
+        <ol id="instructions">
+          <li>Open Developer Tools</li>
+          <li>Enter the same string in both username and password to login.</li>
+        </ol>
+
         { !this.state.loggedIn && <LoginForm onLogin={this.handleLogin} />    }
 
         { this.state.loggedIn  && <LogoutForm onLogout={this.handleLogout} /> }
