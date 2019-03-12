@@ -40,7 +40,37 @@ const refresh = function (token) {
   });
 };
 
+const testPublic = function () {
+
+  return fetch(`${API_ROOT}/public-test`)
+  .then((res) => {
+    if (!res.ok) {
+      throw new Error(res.status);
+    }
+
+    return res.json();
+  });
+};
+
+const testProtected = function (token) {
+
+  return fetch(`${API_ROOT}/protected-test`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  })
+  .then((res) => {
+    if (!res.ok) {
+      throw new Error(res.status);
+    }
+
+    return res.json();
+  });
+};
+
 export default {
   login,
   refresh,
+  testPublic,
+  testProtected,
 }

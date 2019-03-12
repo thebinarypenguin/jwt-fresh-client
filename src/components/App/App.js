@@ -3,6 +3,8 @@ import jwtDecode from 'jwt-decode';
 import ApiService from '../../api-service';
 import LoginForm from '../LoginForm/LoginForm';
 import LogoutForm from '../LogoutForm/LogoutForm';
+import PublicTestButton from '../PublicTestButton/PublicTestButton';
+import ProtectedTestButton from '../ProtectedTestButton/ProtectedTestButton';
 
 import './App.css';
 
@@ -83,6 +85,9 @@ class App extends React.Component {
         { !this.state.loggedIn && <LoginForm onLogin={this.maintainAuth} />    }
 
         { this.state.loggedIn  && <LogoutForm onLogout={this.destroyAuth} /> }
+
+        <PublicTestButton />
+        <ProtectedTestButton />
 
       </div>
     );
