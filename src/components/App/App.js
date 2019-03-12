@@ -1,10 +1,12 @@
 import React from 'react';
 import jwtDecode from 'jwt-decode';
 import ApiService from '../../api-service';
+import CountdownService from '../../countdown-service';
 import LoginForm from '../LoginForm/LoginForm';
 import LogoutForm from '../LogoutForm/LogoutForm';
 import PublicTestButton from '../PublicTestButton/PublicTestButton';
 import ProtectedTestButton from '../ProtectedTestButton/ProtectedTestButton';
+
 
 import './App.css';
 
@@ -26,10 +28,35 @@ class App extends React.Component {
       loggedIn: false,
     };
 
+    this.killer = null;
     this.maintainAuthTimeout = null;
 
+    this.handleLogin = this.handleLogin.bind(this);
+    this.handleLogout = this.handleLogout.bind(this);
     this.maintainAuth  = this.maintainAuth.bind(this);
     this.destroyAuth   = this.destroyAuth.bind(this);
+  }
+
+  componentDidMount() {
+
+    this.killer = CountdownService.createCountdown(this.destroyAuth, 10 * 1000);
+
+    document.addEventListener('mousemove', this.killer.reset);
+  }
+
+  componentWillUnmount() {
+
+    document.removeEventListener('mousemove', this.killer.reset);
+  }
+
+  handleLogin(token) {
+    this.killer.start();
+    this.maintainAuth(token);
+  }
+
+  handleLogout() {
+    this.killer.stop()
+    this.destroyAuth();
   }
 
   maintainAuth(token) {
@@ -82,9 +109,9 @@ class App extends React.Component {
       <div id="app" className="container-fluid">
         <h1>JWT Fresh</h1>
 
-        { !this.state.loggedIn && <LoginForm onLogin={this.maintainAuth} />    }
+        { !this.state.loggedIn && <LoginForm onLogin={this.handleLogin} />    }
 
-        { this.state.loggedIn  && <LogoutForm onLogout={this.destroyAuth} /> }
+        { this.state.loggedIn  && <LogoutForm onLogout={this.handleLogout} /> }
 
         <PublicTestButton />
         <ProtectedTestButton />
