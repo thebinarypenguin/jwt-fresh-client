@@ -1,5 +1,5 @@
 import React from 'react';
-import config from '../../config';
+import ApiService from '../../api-service';
 
 import './LoginForm.css';
 
@@ -21,40 +21,23 @@ class LoginForm extends React.Component {
 
     const { username, password } = ev.target;
 
-    fetch(`${config.API_ROOT}/login`, {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify({
-        username: username.value,
-        password: password.value,
-      }),
-    })
-    .then((res) => {
+    ApiService
+      .login(username.value, password.value)
+      .then((json) => {
 
-      if (!res.ok) {
-        return Promise.reject(res);
-      }
+        this.setState({ error: false });
 
-      return res.json();
-    })
-    .then((json) => {
+        this.props.onLogin(json.token);
+      })
+      .catch((err) => {
 
-      username.value = '';
-      password.value = '';
+        this.setState({ error: true });
+      })
+      .finally(() => {
 
-      this.setState({ error: false });
-
-      this.props.onLogin(json.token);
-    })
-    .catch((err) => {
-
-      username.value = '';
-      password.value = '';
-
-      this.setState({ error: true });
-    });
+        username.value = '';
+        password.value = '';
+      });
   }
 
   render() {

@@ -1,10 +1,19 @@
 import React from 'react';
+import jwtDecode from 'jwt-decode';
+import ApiService from '../../api-service';
 import LoginForm from '../LoginForm/LoginForm';
 import LogoutForm from '../LogoutForm/LogoutForm';
-import refresher from '../../refresher';
-import killer from '../../killer';
 
 import './App.css';
+
+const safeJwtDecode = function (jwt) {
+
+  try {
+    return jwtDecode(jwt);
+  } catch (err) {
+    return undefined;
+  }
+};
 
 class App extends React.Component {
 
@@ -15,31 +24,54 @@ class App extends React.Component {
       loggedIn: false,
     };
 
-    this.handleLogin  = this.handleLogin.bind(this);
-    this.handleLogout = this.handleLogout.bind(this);
+    this.maintainAuthTimeout = null;
+
+    this.maintainAuth  = this.maintainAuth.bind(this);
+    this.destroyAuth   = this.destroyAuth.bind(this);
   }
 
-  componentDidMount() {
-    this.refresher = refresher.createRefresher(window.localStorage, 'token');
-    this.killer    = killer.createKiller(window.localStorage, 'token');
+  maintainAuth(token) {
 
-    document.addEventListener('mousemove', this.killer.reset);
-  }
+    console.log(`Got Token: ${token}`);
 
-  componentWillUnmount() {
-    document.removeEventListener('mousemove', this.killer.reset);
-  }
-
-  handleLogin(token) {
     this.setState({ loggedIn: true });
+
+    // Persist token
     window.localStorage.setItem('token', token);
-    this.refresher.start();
+
+    const payload = safeJwtDecode(token);
+
+    if (payload.exp) {
+
+      const expirationTime = (payload.exp * 1000) - Date.now();
+      const refreshTime    = expirationTime - (10 * 1000);
+
+      // Schedule a refresh request
+      this.maintainAuthTimeout = setTimeout(() => {
+
+        ApiService
+          .refresh(token)
+          .then((body) => {
+            this.maintainAuth(body.token);
+          })
+          .catch((err) => {
+           this.destroyAuth();
+          });
+
+      }, refreshTime);
+    }
   }
 
-  handleLogout() {
-    this.setState({ loggedIn: false });
+  destroyAuth() {
+
+    // Stop all further refreshes
+    clearTimeout(this.maintainAuthTimeout);
+
     window.localStorage.removeItem('token');
-    this.refresher.stop();
+
+    this.setState({ loggedIn: false });
+
+    console.log('Destroy Token');
   }
 
   render() {
@@ -48,9 +80,9 @@ class App extends React.Component {
       <div id="app" className="container-fluid">
         <h1>JWT Fresh</h1>
 
-        { !this.state.loggedIn && <LoginForm onLogin={this.handleLogin} />    }
+        { !this.state.loggedIn && <LoginForm onLogin={this.maintainAuth} />    }
 
-        { this.state.loggedIn  && <LogoutForm onLogout={this.handleLogout} /> }
+        { this.state.loggedIn  && <LogoutForm onLogout={this.destroyAuth} /> }
 
       </div>
     );
